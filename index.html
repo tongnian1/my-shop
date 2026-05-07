@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>淘宝风格 - 外部JS数据</title>
+    <style>
+        /* 样式保持不变 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f4f4f4;
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+            color: #3c3c3c;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        .tabs-header {
+            display: flex;
+            background-color: #fff;
+            border-bottom: 2px solid #ff5000;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        .tab-btn {
+            position: relative;
+            padding: 16px 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            background: none;
+            border: none;
+            outline: none;
+            color: #3c3c3c;
+            transition: color 0.2s;
+        }
+
+        .tab-btn:hover,
+        .tab-btn.active {
+            color: #ff5000;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 2px;
+            background-color: #ff5000;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 0 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .product-card {
+            background-color: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid transparent;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            border: 1px solid #ff5000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            overflow: hidden;
+            background-color: #f9f9f9;
+        }
+
+        .carousel-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            width: 100%;
+            /* 🌟 改为 100% */
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .carousel-slide {
+            flex: 0 0 100%;
+            /* 🌟 新增：强制每张图必须占满刚好 100% 的可视区域 */
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* 裁剪填充，类似于 background-size: cover */
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-card:hover .carousel-btn {
+            display: flex;
+        }
+
+        .carousel-btn:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-prev {
+            left: 8px;
+        }
+
+        .btn-next {
+            right: 8px;
+        }
+
+        .product-info {
+            padding: 12px;
+        }
+
+        .price-wrap {
+            display: flex;
+            align-items: baseline;
+            color: #ff5000;
+            margin-bottom: 6px;
+        }
+
+        .price-symbol {
+            font-size: 14px;
+        }
+
+        .price-value {
+            font-size: 22px;
+            font-weight: 700;
+            margin-left: 2px;
+        }
+
+        .promo-tag {
+            background-color: #ff5000;
+            color: #fff;
+            font-size: 12px;
+            padding: 1px 4px;
+            border-radius: 2px;
+            margin-left: 6px;
+        }
+
+        .product-title {
+            font-size: 14px;
+            line-height: 20px;
+            color: #333;
+            margin-bottom: 8px;
+            height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .shop-badge {
+            background-color: #e4393c;
+            color: #fff;
+            font-size: 10px;
+            padding: 1px 4px;
+            border-radius: 2px;
+            margin-right: 4px;
+            vertical-align: text-bottom;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .size-tags {
+            display: flex;
+            gap: 4px;
+        }
+
+        .size-tag {
+            border: 1px solid #e5e5e5;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        .sales {
+            color: #999;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="tabs-header">
+            <button class="tab-btn active" onclick="switchTab('shoes')">鞋靴箱包</button>
+            <button class="tab-btn" onclick="switchTab('furniture')">家装家居</button>
+            <button class="tab-btn" onclick="switchTab('appliance')">家用电器</button>
+        </div>
+
+        <div id="tab-shoes" class="tab-content active">
+            <div class="product-list" id="shoes-list-container"></div>
+        </div>
+
+        <div id="tab-furniture" class="tab-content">
+            <div class="product-list" id="furniture-list-container"></div>
+        </div>
+
+        <div id="tab-appliance" class="tab-content">
+            <div class="product-list" id="appliance-list-container"></div>
+        </div>
+    </div>
+
+    <script src="./js/shoesData.js"></script>
+    <script src="./js/furniture.js"></script>
+    <script src="./js/appliance.js"></script>
+
+    <script>
+        // --- 🌟 新增：用于记录各个 Tab 是否已经加载过的状态对象 ---
+        const renderedTabs = {
+            shoes: false,
+            furniture: false,
+            appliance: false
+        };
+
+        // 渲染商品列表函数 (保持不变)
+        function renderProductList(data, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const htmlStr = data.map(product => {
+                const slidesHtml = product.images.map(imgUrl => `
+            <div class="carousel-slide">
+                <img src="${imgUrl}" alt="${product.title}">
+            </div>
+        `).join('');
+
+                const tagsHtml = product.tags.map(tag => `<span class="size-tag">${tag}</span>`).join('');
+                const originalPriceHtml = product.originalPrice ? `<span style="font-size: 12px; color:#999; text-decoration: line-through; margin-left:4px;">¥${product.originalPrice}</span>` : '';
+                const promoTagHtml = product.promoTag ? `<span class="promo-tag">${product.promoTag}</span>` : '';
+                const badgeHtml = product.shopBadge ? `<span class="shop-badge" style="background-color: ${product.shopBadgeColor};">${product.shopBadge}</span>` : '';
+
+                return `
+            <div class="product-card">
+                <div class="carousel-container" id="carousel-${product.id}">
+                    <div class="carousel-track">
+                        ${slidesHtml}
+                    </div>
+                    <button class="carousel-btn btn-prev" onclick="moveCarousel(event, 'carousel-${product.id}', -1)">&#10094;</button>
+                    <button class="carousel-btn btn-next" onclick="moveCarousel(event, 'carousel-${product.id}', 1)">&#10095;</button>
+                </div>
+                <div class="product-info">
+                    <div class="price-wrap">
+                        <span class="price-symbol">¥</span>
+                        <span class="price-value">${product.price}</span>
+                        ${originalPriceHtml}
+                        ${promoTagHtml}
+                    </div>
+                    <div class="product-title">
+                        ${badgeHtml}${product.title}
+                    </div>
+                    <div class="product-meta">
+                        <div class="size-tags">
+                            <span class="size-tag">参数: ${product.sizes}</span>
+                            ${tagsHtml}
+                        </div>
+                        <span class="sales">${product.sales}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+            }).join('');
+
+            container.innerHTML = htmlStr;
+        }
+
+        // 🌟 增强后的 Tab 切换逻辑
+        function switchTab(tabId) {
+            // 1. 处理 UI 切换
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // 安全地获取对应的按钮并激活（不再依赖容易报错的 event.target）
+            const targetBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+
+            const targetContent = document.getElementById('tab-' + tabId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+
+            // 2. 🌟 懒加载逻辑：只有没加载过时才执行渲染
+            if (!renderedTabs[tabId]) {
+                console.log(`正在加载 ${tabId} 的数据...`);
+
+                if (tabId === 'shoes') {
+                    renderProductList(shoesData, 'shoes-list-container');
+                } else if (tabId === 'furniture') {
+                    renderProductList(furnitureData, 'furniture-list-container');
+                } else if (tabId === 'appliance') {
+                    renderProductList(applianceData, 'appliance-list-container');
+                }
+
+                // 标记为已加载，下次切换不再重新渲染 DOM
+                renderedTabs[tabId] = true;
+            }
+        }
+
+        // 轮播图逻辑 (保持不变)
+        const carouselStates = {};
+        function moveCarousel(event, carouselId, direction) {
+            event.stopPropagation();
+            const container = document.getElementById(carouselId);
+            const track = container.querySelector('.carousel-track');
+            const slidesCount = track.children.length;
+
+            if (carouselStates[carouselId] === undefined) carouselStates[carouselId] = 0;
+
+            let currentIndex = carouselStates[carouselId] + direction;
+            if (currentIndex >= slidesCount) currentIndex = 0;
+            else if (currentIndex < 0) currentIndex = slidesCount - 1;
+
+            carouselStates[carouselId] = currentIndex;
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+
+        // 🌟 页面加载完成时：只渲染默认的“鞋子”数据
+        window.onload = function () {
+            switchTab('shoes');
+        };
+    </script>
+</body>
+
+</html>
