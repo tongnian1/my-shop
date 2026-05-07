@@ -3,10 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>淘宝风格 - 外部JS数据</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>淘宝风格 - 响应式移动端适配</title>
     <style>
-        /* 样式保持不变 */
+        /* ================= 基础样式重置 ================= */
         * {
             margin: 0;
             padding: 0;
@@ -17,6 +17,8 @@
             background-color: #f4f4f4;
             font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
             color: #3c3c3c;
+            /* 移动端优化：移除点击高亮背景 */
+            -webkit-tap-highlight-color: transparent; 
         }
 
         .container {
@@ -25,6 +27,7 @@
             padding: 20px 0;
         }
 
+        /* ================= 头部 Tabs ================= */
         .tabs-header {
             display: flex;
             background-color: #fff;
@@ -34,8 +37,9 @@
         }
 
         .tab-btn {
+            flex: 1; /* 均分剩余空间，更适合移动端 */
             position: relative;
-            padding: 16px 30px;
+            padding: 16px 10px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
@@ -44,6 +48,7 @@
             outline: none;
             color: #3c3c3c;
             transition: color 0.2s;
+            text-align: center;
         }
 
         .tab-btn:hover,
@@ -57,11 +62,12 @@
             bottom: -2px;
             left: 50%;
             transform: translateX(-50%);
-            width: 100%;
+            width: 80%; /* 稍微缩短下划线宽度 */
             height: 2px;
             background-color: #ff5000;
         }
 
+        /* ================= 内容区域与网格 ================= */
         .tab-content {
             display: none;
             padding: 0 20px;
@@ -71,12 +77,14 @@
             display: block;
         }
 
+        /* 默认 PC 端：一行四个 */
         .product-list {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 18px;
         }
 
+        /* ================= 商品卡片 ================= */
         .product-card {
             background-color: #fff;
             border-radius: 12px;
@@ -86,12 +94,19 @@
             cursor: pointer;
         }
 
-        .product-card:hover {
-            border: 1px solid #ff5000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            transform: translateY(-2px);
+        /* PC端悬停效果 */
+        @media (hover: hover) {
+            .product-card:hover {
+                border: 1px solid #ff5000;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                transform: translateY(-2px);
+            }
+            .product-card:hover .carousel-btn {
+                display: flex;
+            }
         }
 
+        /* ================= 轮播图区域 ================= */
         .carousel-container {
             position: relative;
             width: 100%;
@@ -106,14 +121,12 @@
             left: 0;
             display: flex;
             width: 100%;
-            /* 🌟 改为 100% */
             height: 100%;
             transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .carousel-slide {
             flex: 0 0 100%;
-            /* 🌟 新增：强制每张图必须占满刚好 100% 的可视区域 */
             width: 100%;
             height: 100%;
             display: flex;
@@ -127,9 +140,9 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* 裁剪填充，类似于 background-size: cover */
         }
 
+        /* 轮播按钮 */
         .carousel-btn {
             position: absolute;
             top: 50%;
@@ -142,27 +155,19 @@
             border-radius: 50%;
             cursor: pointer;
             z-index: 10;
-            display: none;
+            display: none; /* 默认隐藏，等待Hover或移动端媒体查询开启 */
             align-items: center;
             justify-content: center;
-        }
-
-        .product-card:hover .carousel-btn {
-            display: flex;
         }
 
         .carousel-btn:hover {
             background-color: rgba(0, 0, 0, 0.5);
         }
 
-        .btn-prev {
-            left: 8px;
-        }
+        .btn-prev { left: 8px; }
+        .btn-next { right: 8px; }
 
-        .btn-next {
-            right: 8px;
-        }
-
+        /* ================= 商品信息 ================= */
         .product-info {
             padding: 12px;
         }
@@ -174,15 +179,8 @@
             margin-bottom: 6px;
         }
 
-        .price-symbol {
-            font-size: 14px;
-        }
-
-        .price-value {
-            font-size: 22px;
-            font-weight: 700;
-            margin-left: 2px;
-        }
+        .price-symbol { font-size: 14px; }
+        .price-value { font-size: 22px; font-weight: 700; margin-left: 2px; }
 
         .promo-tag {
             background-color: #ff5000;
@@ -191,6 +189,7 @@
             padding: 1px 4px;
             border-radius: 2px;
             margin-left: 6px;
+            white-space: nowrap;
         }
 
         .product-title {
@@ -227,16 +226,85 @@
         .size-tags {
             display: flex;
             gap: 4px;
+            flex-wrap: wrap; /* 允许标签折行 */
         }
 
         .size-tag {
             border: 1px solid #e5e5e5;
             padding: 0 4px;
             border-radius: 2px;
+            white-space: nowrap;
         }
 
         .sales {
-            color: #999;
+            white-space: nowrap;
+            margin-left: 5px;
+        }
+
+        /* ================= 🌟 响应式适配 (核心修改区域) ================= */
+
+        /* 平板尺寸适配 (小于 1024px) */
+        @media screen and (max-width: 1024px) {
+            .product-list {
+                grid-template-columns: repeat(3, 1fr); /* 降为一行三个 */
+                gap: 15px;
+            }
+        }
+
+        /* 手机尺寸适配 (小于 768px) */
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 0 0 10px 0; /* 减小外围空白 */
+            }
+            .tabs-header {
+                padding: 0;
+                margin-bottom: 10px;
+                position: sticky; /* 头部固定在顶端 */
+                top: 0;
+                z-index: 100;
+            }
+            .tab-btn {
+                font-size: 14px; /* 缩小字体 */
+                padding: 12px 5px;
+            }
+            .tab-content {
+                padding: 0 10px; /* 减小内容两侧间距 */
+            }
+            .product-list {
+                grid-template-columns: repeat(2, 1fr); /* 🌟 淘宝手机端经典：一行两个 */
+                gap: 10px; /* 缩小卡片间距 */
+            }
+            .product-info {
+                padding: 8px; /* 缩小卡片内边距 */
+            }
+            .product-title {
+                font-size: 13px; /* 缩小标题字体 */
+                line-height: 18px;
+                height: 36px;
+                margin-bottom: 6px;
+            }
+            .price-value {
+                font-size: 18px; /* 缩小价格字体 */
+            }
+            .promo-tag {
+                font-size: 10px;
+                padding: 1px 3px;
+            }
+            .product-meta {
+                flex-direction: column; /* 手机端空间小，将标签和销量垂直排列 */
+                align-items: flex-start;
+                gap: 6px;
+            }
+            .sales {
+                margin-left: 0;
+                font-size: 11px;
+            }
+            .carousel-btn {
+                display: flex; /* 🌟 手机端没有鼠标悬停，默认展示轮播切换按钮 */
+                width: 24px;
+                height: 24px;
+                font-size: 10px;
+            }
         }
     </style>
 </head>
@@ -268,14 +336,14 @@
     <script src="./js/appliance.js"></script>
 
     <script>
-        // --- 🌟 新增：用于记录各个 Tab 是否已经加载过的状态对象 ---
+        // 用于记录各个 Tab 是否已经加载过的状态对象
         const renderedTabs = {
             shoes: false,
             furniture: false,
             appliance: false
         };
 
-        // 渲染商品列表函数 (保持不变)
+        // 渲染商品列表函数
         function renderProductList(data, containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -326,14 +394,13 @@
             container.innerHTML = htmlStr;
         }
 
-        // 🌟 增强后的 Tab 切换逻辑
+        // Tab 切换逻辑
         function switchTab(tabId) {
-            // 1. 处理 UI 切换
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-            // 安全地获取对应的按钮并激活（不再依赖容易报错的 event.target）
-            const targetBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`);
+            // 🌟 核心修复：直接通过属性选择器精准找到对应的按钮，彻底抛弃容易报错的 event.target
+            const targetBtn = document.querySelector(`.tab-btn[onclick*="${tabId}"]`);
             if (targetBtn) {
                 targetBtn.classList.add('active');
             }
@@ -343,10 +410,8 @@
                 targetContent.classList.add('active');
             }
 
-            // 2. 🌟 懒加载逻辑：只有没加载过时才执行渲染
+            // 懒加载逻辑
             if (!renderedTabs[tabId]) {
-                console.log(`正在加载 ${tabId} 的数据...`);
-
                 if (tabId === 'shoes') {
                     renderProductList(shoesData, 'shoes-list-container');
                 } else if (tabId === 'furniture') {
@@ -354,13 +419,11 @@
                 } else if (tabId === 'appliance') {
                     renderProductList(applianceData, 'appliance-list-container');
                 }
-
-                // 标记为已加载，下次切换不再重新渲染 DOM
                 renderedTabs[tabId] = true;
             }
         }
 
-        // 轮播图逻辑 (保持不变)
+        // 轮播图逻辑
         const carouselStates = {};
         function moveCarousel(event, carouselId, direction) {
             event.stopPropagation();
@@ -378,7 +441,7 @@
             track.style.transform = `translateX(-${currentIndex * 100}%)`;
         }
 
-        // 🌟 页面加载完成时：只渲染默认的“鞋子”数据
+        // 页面加载完成时：渲染默认数据
         window.onload = function () {
             switchTab('shoes');
         };
